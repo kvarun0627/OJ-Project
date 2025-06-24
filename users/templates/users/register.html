@@ -13,10 +13,9 @@
     </form>
 
     <p>Already have an account? <a href="{% url 'login' %}">Login (Django)</a></p>
+    
 
-    <hr>
-
-    <h3>JWT Token Login</h3>
+    <!-- <h3>JWT Token Login</h3>
     <form method="POST" action="/api/token/">
         {% csrf_token %}
         <label>Username:</label><br>
@@ -24,6 +23,6 @@
         <label>Password:</label><br>
         <input type="password" name="password"><br>
         <button type="submit">Login (JWT)</button>
-    </form>
+    </form> -->
 </body>
 </html>

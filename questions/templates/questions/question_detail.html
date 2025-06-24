@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<h1>{{ question.title }}</h1>
+<p><strong>Description:</strong> {{ question.description }}</p>
+<p><strong>Constraints:</strong> {{ question.constraints }}</p>
+<p><strong>Tags:</strong> {{ question.tags }}</p>
+<p><strong>Difficulty:</strong> {{ question.difficulty }}</p>
+<a href="{% url 'question_list' %}">Back</a>

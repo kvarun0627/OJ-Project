@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<h1>All Questions</h1>
+<a href="{% url 'question_create' %}">Add New Question</a>
+<ul>
+  {% for question in questions %}
+    <li>
+      <a href="{% url 'question_detail' question.pk %}">{{ question.title }}</a>
+      [<a href="{% url 'question_update' question.pk %}">Edit</a>]
+      [<a href="{% url 'question_delete' question.pk %}">Delete</a>]
+    </li>
+  {% endfor %}
+</ul>
