@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'users',
     'questions',
+    'compiler',
 ]
 
 
@@ -62,9 +63,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-LOGIN_REDIRECT_URL='/' #where ever you want the user to go after login
-
-
+# LOGIN_REDIRECT_URL='/' #where ever you want the user to go after login
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -147,3 +146,5 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

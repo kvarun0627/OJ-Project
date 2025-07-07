@@ -4,23 +4,19 @@
     <title>Django Login</title>
 </head>
 <body>
-    <h2>Login</h2>
-    {% if form.errors %}
-        <div style="color:red;">
-            {{ form.non_field_errors }}
-        </div>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
     {% endif %}
-    <!-- {% if messages %}
-        <ul>
-            {% for message in messages %}
-            <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %} -->
+
     <form method="POST">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Login</button>
+        <a href="{% url 'password_reset_form' %}"> Forgot your password?</a>
     </form>
     <p>Don’t have an account? <a href="{% url 'register' %}">Register here</a></p>
 </body>

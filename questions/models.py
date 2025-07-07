@@ -7,3 +7,5 @@ class Question(models.Model):
     tags=models.CharField(max_length=200)
     created_at=models.DateTimeField(auto_now_add=True)
 
+    def get_constraints_list(self):
+        return [c.strip() for c in self.constraints.splitlines() if c.strip()]

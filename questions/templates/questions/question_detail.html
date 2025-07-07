@@ -1,7 +1,141 @@
 <!DOCTYPE html>
-<h1>{{ question.title }}</h1>
-<p><strong>Description:</strong> {{ question.description }}</p>
-<p><strong>Constraints:</strong> {{ question.constraints }}</p>
-<p><strong>Tags:</strong> {{ question.tags }}</p>
-<p><strong>Difficulty:</strong> {{ question.difficulty }}</p>
-<a href="{% url 'question_list' %}">Back</a>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ question.title }}</title>
+
+  <!-- CodeMirror CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css"
+  />
+
+  <style>
+    .CodeMirror {
+      height: 300px;
+      border: 1px solid #ddd;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .form-field {
+      margin-bottom: 1em;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>{{ question.title }}</h1>
+
+  <p><strong>Description:</strong> {{ question.description }}</p>
+  <p><strong>Constraints:</strong></p>
+    <ul>
+      {% for constraint in question.get_constraints_list %}
+        <li>{{ constraint }}</li>
+      {% endfor %}
+    </ul>
+<p>
+<button onclick="toggleTags()">Show Tags</button>
+</p>
+<div id="tag-content" style="display: none;">
+  <p><strong>Tags:</strong> {{ question.tags }}</p>
+</div>
+
+
+  <hr />
+
+  <h3>Submit Your Code</h3>
+  <form method="POST" action="">
+    {% csrf_token %}
+
+    <div class="form-field">
+      {{ form.language.label_tag }}<br />
+      {{ form.language }}
+      {% if form.language.errors %}
+        <ul class="errorlist">
+          {% for error in form.language.errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <div class="form-field">
+      {{ form.code.label_tag }}<br />
+      {{ form.code }}
+      {% if form.code.errors %}
+        <ul class="errorlist">
+          {% for error in form.code.errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    <div class="form-field">
+      {{ form.user_input.label_tag }} (Optional)<br />
+      {{ form.user_input }}
+      {% if form.user_input.errors %}
+        <ul class="errorlist">
+          {% for error in form.user_input.errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+
+    {% if user.is_authenticated %}
+      <button type="submit">Run Code</button>
+    {% else %}
+      <p>Please <a href="{% url 'login' %}">log in</a> to submit code.</p>
+    {% endif %}
+  </form>
+
+  {% if output %}
+    <h3>Output:</h3>
+    <pre>{{ output }}</pre>
+  {% endif %}
+
+  <br />
+  <a href="{% url 'question_list' %}">Back</a>
+
+  <!-- CodeMirror JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/edit/continuelist.min.js"></script>
+
+
+  <script>
+    var editor = CodeMirror.fromTextArea(document.getElementById('{{ form.code.id_for_label }}'), {
+      lineNumbers: true,
+      mode: null,
+      theme: 'default',
+      indentUnit: 4,
+      indentWithTabs: false,
+      autoCloseBrackets: true,    //Enable auto closing brackets here
+      matchBrackets: true,
+      smartIndent: true,
+      electricChars: true
+    });
+
+    document.querySelector('form').addEventListener('submit', function() {
+      editor.save();
+    });
+
+    function toggleTags() 
+    {
+      const tagDiv = document.getElementById("tag-content");
+      if (tagDiv.style.display === "none") 
+      {
+        tagDiv.style.display = "block";
+      } else 
+      {
+        tagDiv.style.display = "none";
+      }
+    }
+  </script>
+</body>
+</html>
+
