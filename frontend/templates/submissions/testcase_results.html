@@ -1,0 +1,18 @@
+<strong>Language:</strong> {{ testcase.language }} <br>
+
+<strong>Code:</strong>
+<pre>{{ testcase.code }}</pre>
+
+{% if submission.verdict != "Accepted" %}
+  <strong>Input:</strong>
+  <pre>{{ testcase.input_data }}</pre>
+
+  <strong>Your Output:</strong>
+  <pre>{{ testcase.user_output }}</pre>
+
+  <strong>Expected Output:</strong>
+  <pre>{{ testcase.expected_output }}</pre>
+{% else %}
+  <em>All test cases passed successfully.</em>
+{% endif %}
+

@@ -14,7 +14,7 @@ def register(request):
     else:
         form = RegisterForm()
     
-    return render(request, 'users/register.html', {'form': form})
+    return render(request, 'frontend/templates/users/register.html', {'form': form})
 
 def login(request):
     if request.method =='POST':
@@ -30,7 +30,7 @@ def login(request):
     else:
         form=LoginForm()
 
-    return render(request,'users/login.html',{'form':form})
+    return render(request,'frontend/templates/users/login.html',{'form':form})
 
 def logout(request):
     request.session.flush()

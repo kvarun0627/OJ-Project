@@ -1,0 +1,11 @@
+{% for submission in submissions %}
+  <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+    <strong>Verdict:</strong> {{ submission.verdict }} <br>
+    <strong>Time:</strong> {{ submission.created_at }} <br>
+    <a href="{% url 'testcase_results' pk=submission.question.id submission_id=submission.id %}">
+      View Test Case Details
+    </a>
+  </div>
+{% empty %}
+  <p>No submissions found for this question.</p>
+{% endfor %}

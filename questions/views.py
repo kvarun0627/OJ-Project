@@ -5,15 +5,15 @@ from django.shortcuts import render,redirect,get_object_or_404
 from .models import Question
 from .forms import Questionform
 from compiler.forms import CodeForm
-from compiler.models import Submission
 from django.contrib.auth.decorators import login_required, user_passes_test
+from compiler.models import Submission,TestCaseResult
 
 def is_admin(user):
     return user.is_superuser
 
 def question_lists(request):
     questions=Question.objects.filter()
-    return render(request,'questions/question_list.html',{'questions':questions})
+    return render(request,'frontend/templates/questions/question_list.html',{'questions':questions})
 
 @login_required
 @user_passes_test(is_admin)
@@ -26,89 +26,159 @@ def create_question(request):
     else:
         form=Questionform()
 
-    return render(request,'questions/question_form.html',{'form':form})
+    return render(request,'frontend/templates/questions/question_form.html',{'form':form})
 
-def question_detail(request,pk):
-    question=get_object_or_404(Question,pk=pk)
-    output = ''
+def question_detail(request, pk):
+    question = get_object_or_404(Question, pk=pk)
     if request.method == 'POST':
         form = CodeForm(request.POST)
         if form.is_valid():
             code = form.cleaned_data['code']
-            user_input = form.cleaned_data['user_input']
             language = form.cleaned_data['language']
+            testcases = question.testcases
 
             folder = f"/tmp/{uuid.uuid4()}"
-            os.makedirs(folder)
+            os.makedirs(folder, exist_ok=True)
 
-            try:
-                if language == 'cpp':
-                    source_file = os.path.join(folder, 'main.cpp')
-                    exe_file = os.path.join(folder, 'main.out')
-                    with open(source_file, 'w') as f:
-                        f.write(code)
-                    compile = subprocess.run(['g++', source_file, '-o', exe_file],
-                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-                    if compile.returncode!=0:
-                        output = compile.stderr
-                    else:
-                        run = subprocess.run([exe_file],
-                                             input=user_input,
-                                             stdout=subprocess.PIPE,
-                                             stderr=subprocess.PIPE,
-                                             timeout=2,
-                                             text=True)
-                        output = run.stdout or run.stderr
+            user = request.user  # Ensure user is authenticated
+            verdict='Accepted'
+            failing_case = None
 
-                elif language == 'python':
-                    source_file = os.path.join(folder, 'main.py')
-                    with open(source_file, 'w') as f:
-                        f.write(code)
-                    run = subprocess.run(['python3', source_file],
-                                         input=user_input,
-                                         stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE,
-                                         timeout=2,
-                                         text=True)
-                    output = run.stdout or run.stderr
+            for case in testcases:
+                input_data = case['input']
+                expected_output = case['output'].strip()
+                user_output = run_and_output(code, input_data, language, folder).strip()
 
-                elif language == 'java':
-                    source_file = os.path.join(folder, 'Main.java')
-                    with open(source_file, 'w') as f:
-                        f.write(code)
-                    compile = subprocess.run(['javac', source_file],
-                                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-                    if compile.returncode != 0:
-                        output = compile.stderr
-                    else:
-                        run = subprocess.run(['java', '-cp', folder, 'Main'],
-                                             input=user_input,
-                                             stdout=subprocess.PIPE,
-                                             stderr=subprocess.PIPE,
-                                             timeout=2,
-                                             text=True)
-                        output = run.stdout or run.stderr
-
-                else:
-                    output = "Choose The Language"
-
-            except subprocess.TimeoutExpired:
-                output = "Time Limit Exceeded"
-            except Exception as e:
-                output = str(e)
-
-            # Save to database
-            Submission.objects.create(
-                language=language,
-                code=code,
-                user_input=user_input,
-                output=output
+                if user_output != expected_output:
+                    verdict = 'Not Accepted'
+                    failing_case = {
+                        'input': input_data,
+                        'expected_output': expected_output,
+                        'user_output': user_output
+                    }
+                    break
+            
+            submission=Submission.objects.create(
+                user=user,
+                question=question,
+                verdict='Pending',
             )
+            if verdict == 'Accepted':
+                TestCaseResult.objects.create(
+                    user=user,
+                    submission=submission,
+                    question=question,
+                    language=language,
+                    code=code
+                )
+            else:
+                TestCaseResult.objects.create(
+                    user=user,
+                    submission=submission,
+                    question=question,
+                    language=language,
+                    code=code,
+                    input_data=failing_case['input'],
+                    expected_output=failing_case['expected_output'],
+                    user_output=failing_case['user_output'],
+                )
 
+            submission.verdict = verdict
+            submission.save()
+        else:
+            print(form.errors)
     else:
         form = CodeForm()
 
-    return render(request, 'questions/question_detail.html', {'question': question, 'form': form, 'output': output})
+    return render(request, 'frontend/templates/questions/question_detail.html', {'question': question,'form': form,})
+
+def run_and_output(code, input_str, language, folder):
+    output = ''
+    try:
+        os.makedirs(folder, exist_ok=True)
+        
+        if language == 'cpp':
+            source_file = os.path.join(folder, 'main.cpp')
+            exe_file = os.path.join(folder, 'main')  #for docker no .exe file is required.
+
+            with open(source_file, 'w') as f:
+                f.write(code)
+                f.flush()
+
+            compile_process = subprocess.run(
+                ['g++', source_file, '-o', exe_file],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            if compile_process.returncode != 0:
+                return compile_process.stderr
+
+            run_process = subprocess.run(
+                [exe_file],
+                input=input_str,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=2,
+                text=True
+            )
+            output = run_process.stdout or run_process.stderr
+
+        elif language == 'python':
+            source_file = os.path.join(folder, 'main.py')
+
+            with open(source_file, 'w') as f:
+                f.write(code)
+                f.flush()
+
+            run_process = subprocess.run(
+                ['python3', source_file],
+                input=input_str,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=2,
+                text=True
+            )
+            output = run_process.stdout or run_process.stderr
+
+        elif language == 'java':
+            source_file = os.path.join(folder, 'Main.java')
+
+            with open(source_file, 'w') as f:
+                f.write(code)
+                f.flush()
+
+            compile_process = subprocess.run(
+                ['javac', source_file],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            if compile_process.returncode != 0:
+                return compile_process.stderr
+
+            # Run java in the folder directory
+            run_process = subprocess.run(
+                ['java', 'Main'],
+                input=input_str,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=2,
+                text=True,
+                cwd=folder
+            )
+            output = run_process.stdout or run_process.stderr
+
+        else:
+            output = "Choose The Language"
+
+    except subprocess.TimeoutExpired:
+        output = "Time Limit Exceeded"
+    except Exception as e:
+        output = str(e)
+
+    return output
+
 
 @login_required
 @user_passes_test(is_admin)
@@ -118,7 +188,7 @@ def update_question(request,pk):
     if form.is_valid():
         form.save()
         return redirect('question_list')
-    return render(request,'questions/question_form.html',{'form':form})
+    return render(request,'frontend/templates/questions/question_form.html',{'form':form})
 
 @login_required
 @user_passes_test(is_admin)
@@ -127,4 +197,4 @@ def delete_question(request,pk):
     if request.method=='POST':
         question.delete()
         return redirect('question_list')
-    return render(request,'questions/question_confirm_delete.html',{'question':question})
+    return render(request,'frontend/templates/questions/question_confirm_delete.html',{'question':question})

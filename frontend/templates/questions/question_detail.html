@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ question.title }}</title>
+  <style>
+    .form-field {
+      margin-bottom: 1em;
+    }
+    .errorlist {
+      color : red;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>{{ question.title }}</h1>
+
+  <p><strong>Description:</strong> {{ question.description }}</p>
+  <p><strong>Constraints:</strong></p>
+    <ul>
+      {% for constraint in question.get_constraints_list %}
+        <li>{{ constraint }}</li>
+      {% endfor %}
+    </ul>
+<p>
+<button onclick="toggleTags()">Show Tags</button>
+</p>
+<div id="tag-content" style="display: none;">
+  <p><strong>Tags:</strong> {{ question.tags }}</p>
+</div>
+
+
+  <hr />
+
+  <form method="POST" action="">
+  {% csrf_token %}
+
+  <div class="form-field">
+    {{ form.language.label_tag }}<br />
+    {{ form.language }}
+    {% if form.language.errors %}
+      <ul class="errorlist">
+        {% for error in form.language.errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+
+  <div class="form-field">
+    {{ form.code.label_tag }}<br />
+    {{ form.code }}
+    {% if form.code.errors %}
+      <ul class="errorlist">
+        {% for error in form.code.errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+  {% if user.is_authenticated %}
+    <button type="submit">Run Code</button>
+  {% else %}
+    <p>Please <a href="{% url 'login' %}">log in</a> to submit code.</p>
+  {% endif %}
+  <br>
+  <a href="{% url 'submission' pk=question.id %}">View Submissions</a>
+</form>
+
