@@ -1,18 +1,23 @@
-<strong>Language:</strong> {{ testcase.language }} <br>
+<style>
+  .cases{
+    border:1px solid #ccc;
+    padding:10px; 
+    margin-bottom:10px;
+  }
+</style>
+{% for testcase in testcases %}
+<div class="cases">
+  <p>{{ forloop.counter }}</p>
+  <p>{{ testcase.verdict }}<p>
+  <a href="{% url 'testcase_detail' pk=submission.question.id submission_id=submission.id testcase_id=testcase.id %}">
+    View Details
+  </a>
+</div>
+{% empty %}
+<div class="cases">
+  <p colspan="3">No test cases found</p>
+</div>
+{% endfor %}
 
-<strong>Code:</strong>
-<pre>{{ testcase.code }}</pre>
 
-{% if submission.verdict != "Accepted" %}
-  <strong>Input:</strong>
-  <pre>{{ testcase.input_data }}</pre>
-
-  <strong>Your Output:</strong>
-  <pre>{{ testcase.user_output }}</pre>
-
-  <strong>Expected Output:</strong>
-  <pre>{{ testcase.expected_output }}</pre>
-{% else %}
-  <em>All test cases passed successfully.</em>
-{% endif %}
 

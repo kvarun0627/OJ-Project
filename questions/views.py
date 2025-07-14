@@ -41,48 +41,42 @@ def question_detail(request, pk):
             os.makedirs(folder, exist_ok=True)
 
             user = request.user  # Ensure user is authenticated
-            verdict='Accepted'
-            failing_case = None
-
-            for case in testcases:
-                input_data = case['input']
-                expected_output = case['output'].strip()
-                user_output = run_and_output(code, input_data, language, folder).strip()
-
-                if user_output != expected_output:
-                    verdict = 'Not Accepted'
-                    failing_case = {
-                        'input': input_data,
-                        'expected_output': expected_output,
-                        'user_output': user_output
-                    }
-                    break
-            
             submission=Submission.objects.create(
                 user=user,
                 question=question,
                 verdict='Pending',
+                language=language,
             )
-            if verdict == 'Accepted':
-                TestCaseResult.objects.create(
-                    user=user,
-                    submission=submission,
-                    question=question,
-                    language=language,
-                    code=code
-                )
-            else:
-                TestCaseResult.objects.create(
-                    user=user,
-                    submission=submission,
-                    question=question,
-                    language=language,
-                    code=code,
-                    input_data=failing_case['input'],
-                    expected_output=failing_case['expected_output'],
-                    user_output=failing_case['user_output'],
-                )
+            verdict='Accepted'
+            for case in testcases:
+                input_data = case['input']
+                expected_output = case['expected_output'].strip()
+                user_output = run_and_output(code, input_data, language, folder).strip()
 
+                if user_output != expected_output:
+                    verdict = 'Not Accepted'
+                    TestCaseResult.objects.create(
+                        question=question,
+                        user=user,
+                        submission=submission,
+                        input_data=input_data,
+                        user_output=user_output,
+                        expected_output=expected_output,
+                        code=code,
+                        verdict='Not Accepted',
+                    )
+                else:
+                    TestCaseResult.objects.create(
+                        question=question,
+                        user=user,
+                        submission=submission,
+                        input_data=input_data,
+                        user_output=user_output,
+                        expected_output=expected_output,
+                        code=code,
+                        verdict='Accepted',
+                    )
+            
             submission.verdict = verdict
             submission.save()
         else:

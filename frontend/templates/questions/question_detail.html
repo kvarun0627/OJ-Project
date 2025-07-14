@@ -67,4 +67,14 @@
   <br>
   <a href="{% url 'submission' pk=question.id %}">View Submissions</a>
 </form>
+<script>
+  function toggleTags() {
+    const tagContent = document.getElementById("tag-content");
+    if (tagContent.style.display === "none") {
+      tagContent.style.display = "block";
+    } else {
+      tagContent.style.display = "none";
+    }
+  }
+</script>
 
