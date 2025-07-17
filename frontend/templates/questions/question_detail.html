@@ -3,39 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <title>{{ question.title }}</title>
+
+  <!-- ✅ CodeMirror CSS & JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.13/lib/codemirror.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.13/lib/codemirror.css" />
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.13/lib/codemirror.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.13/mode/python/python.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.13/mode/clike/clike.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.13/addon/edit/closebrackets.js"></script>
+
   <style>
     .form-field {
       margin-bottom: 1em;
     }
     .errorlist {
-      color : red;
+      color: red;
+    }
+    .CodeMirror {
+      height: 400px;
+      border: 1px solid #ccc;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
 
-  <h1>{{ question.title }}</h1>
+<h1>{{ question.title }}</h1>
 
-  <p><strong>Description:</strong> {{ question.description }}</p>
-  <p><strong>Constraints:</strong></p>
-    <ul>
-      {% for constraint in question.get_constraints_list %}
-        <li>{{ constraint }}</li>
-      {% endfor %}
-    </ul>
-<p>
-<button onclick="toggleTags()">Show Tags</button>
-</p>
+<p><strong>Description:</strong> {{ question.description }}</p>
+<p><strong>Constraints:</strong></p>
+<ul>
+  {% for constraint in question.get_constraints_list %}
+    <li>{{ constraint }}</li>
+  {% endfor %}
+</ul>
+
+<p><button onclick="toggleTags()">Show Tags</button></p>
 <div id="tag-content" style="display: none;">
   <p><strong>Tags:</strong> {{ question.tags }}</p>
 </div>
 
+<hr />
 
-  <hr />
-
-  <form method="POST" action="">
+<form method="POST" id="submission-form">
   {% csrf_token %}
 
+  <!-- ✅ Language Selection -->
   <div class="form-field">
     {{ form.language.label_tag }}<br />
     {{ form.language }}
@@ -48,9 +61,12 @@
     {% endif %}
   </div>
 
+  <!-- ✅ Code Editor (CodeMirror) -->
   <div class="form-field">
     {{ form.code.label_tag }}<br />
-    {{ form.code }}
+    <!-- manually rendered textarea -->
+    <textarea name="code" id="code-editor">{% if form.data.code %}{{ form.data.code }}{% else %}{{ form.initial.code }}{% endif %}</textarea>
+
     {% if form.code.errors %}
       <ul class="errorlist">
         {% for error in form.code.errors %}
@@ -59,22 +75,73 @@
       </ul>
     {% endif %}
   </div>
+
   {% if user.is_authenticated %}
     <button type="submit">Run Code</button>
   {% else %}
     <p>Please <a href="{% url 'login' %}">log in</a> to submit code.</p>
   {% endif %}
-  <br>
+
+  <br />
   <a href="{% url 'submission' pk=question.id %}">View Submissions</a>
 </form>
+
 <script>
   function toggleTags() {
     const tagContent = document.getElementById("tag-content");
-    if (tagContent.style.display === "none") {
-      tagContent.style.display = "block";
-    } else {
-      tagContent.style.display = "none";
+    tagContent.style.display = tagContent.style.display === "none" ? "block" : "none";
+  }
+
+  const modeMap = {
+    'cpp': 'text/x-c++src',
+    'python': 'python',
+    'java': 'text/x-java'
+  };
+
+  const langSelect = document.querySelector('select[name="language"]');
+  const selectedLang = langSelect ? langSelect.value : 'python';
+
+  const editor = CodeMirror.fromTextArea(document.getElementById("code-editor"), {
+    lineNumbers: true,
+    mode: modeMap[selectedLang] || 'python',
+    theme: 'default',  // ✅ White background
+    tabSize: 4,
+    indentUnit: 4,
+    autoCloseBrackets: true,
+    matchBrackets: true,
+  });
+
+  const storageKey = "codeeditor-autosave";
+  const savedCode = localStorage.getItem(storageKey);
+  if (savedCode) {
+    editor.setValue(savedCode);
+  }
+
+  setInterval(() => {
+    const code = editor.getValue();
+    localStorage.setItem(storageKey, code);
+  }, 2000);
+
+  langSelect.addEventListener('change', function () {
+    const selected = this.value;
+    editor.setOption('mode', modeMap[selected] || 'python');
+  });
+
+  editor.on("keydown", function (cm, event) {
+    if (event.ctrlKey && event.key === "Enter") {
+      event.preventDefault();
+      document.getElementById("submission-form").submit();
     }
+  });
+
+  document.getElementById("submission-form").addEventListener("submit", function () {
+    document.getElementById("code-editor").value = editor.getValue();
+    localStorage.removeItem(storageKey);
+  });
+
+  // ✅ Clear Editor Button Function
+  function clearEditor() {
+    editor.setValue("");
+    localStorage.removeItem(storageKey);
   }
 </script>
-
