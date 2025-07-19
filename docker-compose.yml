@@ -1,8 +1,9 @@
+
 services:
   db:
     image: postgres
     container_name: oj_postgres
-    restart: always
+    restart: always #if your container or server crashes docker should restart it again
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -10,22 +11,47 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data  # Add volume to persist DB data
+      - postgres_data:/var/lib/postgresql/data # mounting volumes so that data persist every time the container get start again
+
+  redis:
+    image: redis:7
+    container_name: oj_redis
+    restart: always
+    ports:
+      - "6379:6379"
 
   web:
-    build: .
+    build: . # use the image build from tthe docker file in the base directory
     container_name: oj_django
-    command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - .:/app # using volumes in here because everytime we done some changes in the code that should reflect on the project without building new container
     ports:
       - "8000:8000"
-    depends_on:
+    depends_on: # it tells wait until both container gets started until then dont throw some error messages
       - db
+      - redis
     environment:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
+      CELERY_BROKER_URL: redis://redis:6379/0 #tells Django + Celery to use Redis container on port 6379 as the broker (queue).
+
+  celery:
+    build: .
+    container_name: oj_celery
+    command: celery -A oj_project worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - web
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      CELERY_BROKER_URL: redis://redis:6379/0
+
 volumes:
   postgres_data:
