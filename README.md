@@ -20,7 +20,7 @@ A full-stack **Online Judge platform** currently focusing on scalability — bui
 
 | Layer          | Tech Stack                             |
 |----------------|----------------------------------------|
-| 👨‍💻 Backend     | Django, Django REST Framework           |
+| 👨‍💻 Backend     | Django          |
 | 🧠 Async Queue  | Celery + Redis                         |
 | 🧪 Judge Engine | Python-based isolated code runners     |
 | 🗄️ Database     | PostgreSQL                             |
