@@ -1,23 +1,36 @@
-<style>
-  .cases{
-    border:1px solid #ccc;
-    padding:10px; 
-    margin-bottom:10px;
-  }
-</style>
-{% for testcase in testcases %}
-<div class="cases">
-  <p>{{ forloop.counter }}</p>
-  <p>{{ testcase.verdict }}<p>
-  <a href="{% url 'testcase_detail' pk=submission.question.id submission_id=submission.id testcase_id=testcase.id %}">
-    View Details
-  </a>
-</div>
-{% empty %}
-<div class="cases">
-  <p colspan="3">No test cases found</p>
-</div>
-{% endfor %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Test Case Results</title>
+        <style>
+          .cases{
+            border:1px solid #ccc;
+            padding:10px; 
+            margin-bottom:10px;
+          }
+          a{
+            color:black;
+          }
+        </style>
+    </head>
+    <body>
+        {% for testcase in testcases %}
+        <div class="cases">
+          <p>{{ forloop.counter }}</p>
+          <p>{{ testcase.verdict }}<p>
+          <a href="{% url 'testcase_detail' pk=submission.question.id submission_id=submission.id testcase_id=testcase.id %}">
+            View Details
+          </a>
+        </div>
+        {% empty %}
+        <div class="cases">
+          <p colspan="3">No test cases found</p>
+        </div>
+        {% endfor %}
+    </body>
+</html>
 
 
 

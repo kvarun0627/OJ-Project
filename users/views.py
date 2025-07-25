@@ -37,3 +37,9 @@ def logout(request):
     auth_logout(request)
     messages.success(request, "Logged out successfully!")
     return redirect('question_list')
+
+def custom_404_view(request, exception):
+    return render(request, 'frontend/templates/users/404.html', status=404)
+
+def custom_403_view(request, exception=None):
+    return render(request, 'frontend/templates/users/403.html', status=403)

@@ -1,26 +1,74 @@
 <!DOCTYPE html>
-  {% if user.is_authenticated %}
-    <p>Hello, {{ user.username }}!</p>
-    <a href="{% url 'logout' %}">Logout</a>
-  {% else %}
-    <a href="{% url 'login' %}">Login</a> |
-    <a href="{% url 'register' %}">Register if you don't have an account</a>
-  {% endif %}
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Question List</title>
+      <style>
+          body {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+          }
+          a {
+              text-decoration: none;
+              color: black;
+              background-color: gainsboro;
+              padding: 10px 15px;
+              border-radius: 5px;
+          }
+          .question-item {
+              margin-bottom: 30px;
+          }
+      </style>
+  </head>
+  <body>
+    <h1>Question List</h1>
+    <p>Welcome to the Question List page!</p>
+    <p>Here you can view all the questions available.</p>
 
-<br>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
-<h1>All Questions</h1>
-{% if user.is_authenticated and user.is_superuser %}
-  <a href="{% url 'question_create' %}">Add New Question</a>
-{% endif %}
-<ul>
-  {% for question in questions %}
-    <li>
-      <a href="{% url 'question_detail' question.pk %}">{{ question.title }}</a>
-      {% if user.is_authenticated and user.is_superuser %}
-        [<a href="{% url 'question_update' question.pk %}">Edit</a>]
-        [<a href="{% url 'question_delete' question.pk %}">Delete</a>]
-      {% endif %}
-    </li>
-  {% endfor %}
-</ul>
+    {% if user.is_authenticated %}
+      <p>Hello, {{ user.username }}!</p>
+      <a href="{% url 'logout' %}">Logout</a>
+    {% else %}
+      <a href="{% url 'login' %}">Login</a> |
+      <a href="{% url 'register' %}">Register if you don't have an account</a>
+    {% endif %}
+
+
+    {% if not questions %}
+      <p>No questions available.</p>
+    {% endif %}
+
+    {% if user.is_authenticated and user.is_superuser %}
+      <a href="{% url 'question_create' %}">Add New Question</a>
+    {% endif %}
+
+    <br>
+    <br>
+    <br>
+    
+    <ul>
+      {% for question in questions %}
+        <div class="question-item">
+          <li>
+            <a href="{% url 'question_detail' question.pk %}">{{ question.title }}</a>
+            {% if user.is_authenticated and user.is_superuser %}
+              [<a href="{% url 'question_update' question.pk %}">Edit</a>]
+              [<a href="{% url 'question_delete' question.pk %}">Delete</a>]
+            {% endif %}
+          </li>
+        </div>
+      {% endfor %}
+    </ul>
+  </body>
+
+</html>
+

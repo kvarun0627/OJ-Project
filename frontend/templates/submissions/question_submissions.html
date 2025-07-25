@@ -1,11 +1,31 @@
-{% for submission in submissions %}
-  <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
-    <strong>Verdict:</strong> {{ submission.verdict }} <br>
-    <strong>Time:</strong> {{ submission.created_at }} <br>
-    <a href="{% url 'testcase_results' pk=submission.question.id submission_id=submission.id %}">
-      View Test Case Details
-    </a>
-  </div>
-{% empty %}
-  <p>No submissions found for this question.</p>
-{% endfor %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Submissions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        a{
+            color:black
+        }
+    </style>
+</head>
+<body>
+    {% for submission in submissions %}
+      <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+        <strong>Verdict:</strong> {{ submission.verdict }} <br>
+        <strong>Time:</strong> {{ submission.created_at }} <br>
+        <a href="{% url 'testcase_results' pk=submission.question.id submission_id=submission.id %}">
+          View Test Case Details
+        </a>
+      </div>
+    {% empty %}
+      <p>No submissions found for this question.</p>
+    {% endfor %}
+</body>
+</html>
+

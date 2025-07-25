@@ -1,13 +1,23 @@
-<p><strong>Verdict:</strong> {{ testcase.verdict }}</p>
-<p><strong>Input:</strong></p>
-<pre>{{ testcase.input_data }}</pre>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Test Case Details</title>
+    </head>
+    <body>
+        <p><strong>Verdict:</strong> {{ testcase.verdict }}</p>
+        <p><strong>Input:</strong></p>
+        <pre>{{ testcase.input_data }}</pre>
 
-<p><strong>Expected Output:</strong></p>
-<pre>{{ testcase.expected_output}}</pre>
+        <p><strong>Expected Output:</strong></p>
+        <pre>{{ testcase.expected_output}}</pre>
 
-<p><strong>User Output:</strong></p>
-<pre>{{ testcase.user_output}}</pre>
+        <p><strong>User Output:</strong></p>
+        <pre>{{ testcase.user_output}}</pre>
 
-<p><strong>Submitted Code:</strong></p>
-<pre>{{ testcase.code }}</pre>
+        <p><strong>Submitted Code:</strong></p>
+        <pre>{{ testcase.code }}</pre>
+    </body>
+</html>
 

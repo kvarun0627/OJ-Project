@@ -24,13 +24,26 @@
       border: 1px solid #ccc;
       font-size: 14px;
     }
+    a {
+            text-decoration: none;
+            color: black;
+            background-color: gainsboro;
+            padding: 10px 15px;
+            border-radius: 5px;
+    }
   </style>
 </head>
 <body>
 
 <h1>{{ question.title }}</h1>
 
-<p><strong>Description:</strong> {{ question.description }}</p>
+<p><strong>Description:</strong> 
+  <ul>
+    {% for question_detail in question.get_question %}
+      <li>{{ question_detail }}</li>
+    {% endfor %}
+  </ul>
+</p>
 <p><strong>Constraints:</strong></p>
 <ul>
   {% for constraint in question.get_constraints_list %}
@@ -48,7 +61,7 @@
 <form method="POST" id="submission-form">
   {% csrf_token %}
 
-  <!-- ✅ Language Selection -->
+  <!-- Language Selection -->
   <div class="form-field">
     {{ form.language.label_tag }}<br />
     {{ form.language }}
@@ -61,10 +74,11 @@
     {% endif %}
   </div>
 
-  <!-- ✅ Code Editor (CodeMirror) -->
+  <!-- Code Editor (CodeMirror) -->
   <div class="form-field">
     {{ form.code.label_tag }}<br />
     <!-- manually rendered textarea -->
+    <button type="button" onclick="clearEditor()">Reset Code</button>
     <textarea name="code" id="code-editor">{% if form.data.code %}{{ form.data.code }}{% else %}{{ form.initial.code }}{% endif %}</textarea>
 
     {% if form.code.errors %}
@@ -74,15 +88,28 @@
         {% endfor %}
       </ul>
     {% endif %}
+    <br>
+    <p>Use this for custom input to get the following output</p>
+    {{form.input}}
   </div>
+  <br>
+  {% if output %}
+  <div class="output-field">
+    <h3>Output:</h3>
+    <pre>{{ output }}</pre>
+  </div>
+  {% endif %}
 
+  <button type="submit" name="action" value="run">Run with Custom Input</button>
   {% if user.is_authenticated %}
-    <button type="submit">Run Code</button>
+    <button type="submit" name="action" value="submit">Submit Code</button>
   {% else %}
     <p>Please <a href="{% url 'login' %}">log in</a> to submit code.</p>
   {% endif %}
 
-  <br />
+  <br>
+  <br>
+  
   <a href="{% url 'submission' pk=question.id %}">View Submissions</a>
 </form>
 
@@ -104,29 +131,31 @@
   const editor = CodeMirror.fromTextArea(document.getElementById("code-editor"), {
     lineNumbers: true,
     mode: modeMap[selectedLang] || 'python',
-    theme: 'default',  // ✅ White background
+    theme: 'default',  //White background
     tabSize: 4,
     indentUnit: 4,
     autoCloseBrackets: true,
     matchBrackets: true,
   });
 
-  const storageKey = "codeeditor-autosave";
+  const storageKey = "codeeditor-autosave-{{ question.id }}";
+  //Load saved code from localStorage
   const savedCode = localStorage.getItem(storageKey);
   if (savedCode) {
     editor.setValue(savedCode);
   }
-
+  //Autosave code every 2 seconds
   setInterval(() => {
     const code = editor.getValue();
     localStorage.setItem(storageKey, code);
   }, 2000);
-
+  
   langSelect.addEventListener('change', function () {
     const selected = this.value;
     editor.setOption('mode', modeMap[selected] || 'python');
   });
-
+  
+  //Submit code on Ctrl+Enter
   editor.on("keydown", function (cm, event) {
     if (event.ctrlKey && event.key === "Enter") {
       event.preventDefault();
@@ -139,7 +168,7 @@
     localStorage.removeItem(storageKey);
   });
 
-  // ✅ Clear Editor Button Function
+  //Clear Editor Button Function
   function clearEditor() {
     editor.setValue("");
     localStorage.removeItem(storageKey);

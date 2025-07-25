@@ -78,7 +78,7 @@ def run_and_output(code, input_str, language, folder):
                 input=input_str,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                timeout=2,
+                timeout=1,
                 text=True
             )
             output = run_process.stdout or run_process.stderr
@@ -95,7 +95,7 @@ def run_and_output(code, input_str, language, folder):
                 input=input_str,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                timeout=2,
+                timeout=1,
                 text=True
             )
             output = run_process.stdout or run_process.stderr
@@ -121,7 +121,7 @@ def run_and_output(code, input_str, language, folder):
                 input=input_str,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                timeout=2,
+                timeout=1,
                 text=True,
                 cwd=folder
             )

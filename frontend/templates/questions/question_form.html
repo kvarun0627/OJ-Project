@@ -1,8 +1,32 @@
 <!DOCTYPE html>
-<h2>{% if form.instance.pk %}Edit Question{% else %}Add Question{% endif %}</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Save</button>
-</form>
-<a href="{% url 'question_list' %}">Cancel</a>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        a {
+              text-decoration: none;
+              color: black;
+              background-color: gainsboro;
+              padding: 10px 15px;
+              border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+  <h2>{% if form.instance.pk %}Edit Question{% else %}Add Question{% endif %}</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+  </form>
+  <a href="{% url 'question_list' %}">Cancel</a>
+</body>

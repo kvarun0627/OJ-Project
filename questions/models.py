@@ -11,4 +11,6 @@ class Question(models.Model):
     def get_constraints_list(self):
         return [c.strip() for c in self.constraints.splitlines() if c.strip()]
 
+    def get_question(self):
+        return [c.strip() for c in self.description.splitlines() if c.strip()]
 
